@@ -1,5 +1,5 @@
 from typing import Callable, Dict, Optional, Union
-
+import os
 import cv2
 import numpy as np
 import PIL
@@ -13,10 +13,10 @@ from easy_dwpose.draw import draw_openpose
 
 class DWposeDetector:
     def __init__(self, device: str = "сpu"):
-        hf_hub_download("RedHash/DWPose", "yolox_l.onnx", local_dir="./checkpoints")
-        hf_hub_download("RedHash/DWPose", "dw-ll_ucoco_384.onnx", local_dir="./checkpoints")
+        yolo_path = hf_hub_download("RedHash/DWPose", "yolox_l.onnx")
+        dw_path = hf_hub_download("RedHash/DWPose", "dw-ll_ucoco_384.onnx")
         self.pose_estimation = Wholebody(
-            device=device, model_det="checkpoints/yolox_l.onnx", model_pose="checkpoints/dw-ll_ucoco_384.onnx"
+            device=device, model_det=yolo_path, model_pose=dw_path
         )
 
     def _format_pose(self, candidates, scores, width, height):
