@@ -63,6 +63,12 @@ def draw_bodypose(canvas, candidate, subset):
                 continue
             Y = candidate[index.astype(int), 0] * float(W)
             X = candidate[index.astype(int), 1] * float(H)
+            
+            # Check if any point is outside the image boundaries
+            if (Y[0] < 0 or Y[0] >= W or X[0] < 0 or X[0] >= H or 
+                Y[1] < 0 or Y[1] >= W or X[1] < 0 or X[1] >= H):
+                continue
+                
             mX = np.mean(X)
             mY = np.mean(Y)
             length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
@@ -80,7 +86,9 @@ def draw_bodypose(canvas, candidate, subset):
             x, y = candidate[index][0:2]
             x = int(x * W)
             y = int(y * H)
-            cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
+            # Check if point is within image boundaries
+            if x > eps and y > eps and x < W and y < H:
+                cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
 
     return canvas
 
@@ -89,6 +97,9 @@ def draw_handpose(canvas, all_hand_peaks):
     import matplotlib
 
     H, W, C = canvas.shape
+    
+    # Higher threshold for hands to reduce false positives
+    hand_threshold = 0.3  # Much higher than the default eps = 0.01
 
     edges = [
         [0, 1],
@@ -126,7 +137,9 @@ def draw_handpose(canvas, all_hand_peaks):
             y1 = int(y1 * H)
             x2 = int(x2 * W)
             y2 = int(y2 * H)
-            if x1 > eps and y1 > eps and x2 > eps and y2 > eps:
+            # Check if any point is outside the image boundaries or below threshold
+            if (x1 > hand_threshold and y1 > hand_threshold and x2 > hand_threshold and y2 > hand_threshold and
+                x1 < W and y1 < H and x2 < W and y2 < H):
                 cv2.line(
                     canvas,
                     (x1, y1),
@@ -140,7 +153,7 @@ def draw_handpose(canvas, all_hand_peaks):
 
             x = int(x * W)
             y = int(y * H)
-            if x > eps and y > eps:
+            if x > hand_threshold and y > hand_threshold and x < W and y < H:
                 cv2.circle(canvas, (x, y), 4, (0, 0, 255), thickness=-1)
     return canvas
 
@@ -153,7 +166,7 @@ def draw_facepose(canvas, all_lmks):
             x, y = lmk
             x = int(x * W)
             y = int(y * H)
-            if x > eps and y > eps:
+            if x > eps and y > eps and x < W and y < H:
                 cv2.circle(canvas, (x, y), 3, (255, 255, 255), thickness=-1)
     return canvas
 
